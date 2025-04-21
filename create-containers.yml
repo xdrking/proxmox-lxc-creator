@@ -1,0 +1,38 @@
+- name: Create multiple Ubuntu 24.04 Containers on Proxmox
+  hosts: proxmox
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    base_ip: 192.168.233
+    gateway_ip: 192.168.233.2
+    ostemplate: "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+    start_ip: 171
+    start_vmid: 201
+    count: 5
+    node_name: "proxmox"
+
+    
+    api_user: "{{ lookup('env', 'PROXMOX_USER') }}"
+    api_password: "{{ lookup('env', 'PROXMOX_PASS') }}"
+    api_host: "{{ lookup('env', 'PROXMOX_HOST') }}"
+    api_port: "{{ lookup('env', 'PROXMOX_PORT') | default('8006') | int }}"
+    container_password: "{{ lookup('env', 'CONTAINER_PASS') }}"
+  tasks:
+    - name: Create containers in a loop
+      proxmox:
+        api_user: "{{ api_user }}"
+        api_password: "{{ api_password }}"
+        api_host: "{{ api_host }}"
+        api_port: "{{ api_port }}"
+        vmid: "{{ start_vmid + item }}"
+        node: "{{ node_name }}"
+        hostname: "agent-{{ item + 1 }}"
+        ostemplate: "{{ ostemplate }}"
+        memory: 512
+        cores: 1
+        netif: >
+          {"net0":"name=eth0,bridge=vmbr0,ip={{ base_ip }}.{{ start_ip + item }}/24,gw={{ gateway_ip }}"}
+        disk: "local-lvm:5"
+        state: present
+        password: "{{ container_password }}"
+        onboot: yes
+      loop: "{{ range(0, count) | list }}"
