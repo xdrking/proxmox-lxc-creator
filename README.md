@@ -61,7 +61,8 @@ This Ansible playbook automates the creation of multiple Ubuntu 24.04 LXC contai
     ```
 3. Export environment variables before running the playbook:
     ```bash
-    export $(cat .env | xargs)
+    export $(grep -v '^#' .env | xargs)
+    
     ```
 ---
 ## 🖥️ Inventory
@@ -157,7 +158,8 @@ Bu Ansible playbook'u, bir Proxmox VE node üzerinde birden fazla Ubuntu 24.04 L
 3.  Playbook'u çalıştırmadan önce ortam değişkenlerini export edin:
 
     ```bash
-    export $(cat .env | xargs)
+    export $(grep -v '^#' .env | xargs)
+
     ```
 
 ---
